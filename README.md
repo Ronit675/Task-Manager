@@ -51,6 +51,15 @@ If you want a different backend URL, create `.env.local` for Vite:
 VITE_API_URL=http://localhost:5001/api
 ```
 
+For Railway, set these environment variables in the Railway dashboard instead of committing `.env`:
+
+```env
+MONGODB_URI=your-mongodb-atlas-connection-string
+JWT_SECRET=replace-with-a-long-random-string
+CLIENT_URL=https://your-railway-domain.up.railway.app
+NODE_ENV=production
+```
+
 ## Scripts
 
 - `npm run dev` starts the Vite frontend
@@ -83,6 +92,33 @@ npm run dev
 ```
 
 5. Open the Vite URL printed in the terminal, usually `http://localhost:5173`.
+
+## Railway deployment
+
+This repository is set up for a single Railway service that serves both the API and the built React app from Express.
+
+1. Push your code to GitHub and create a new Railway project from that repository.
+2. Add these Railway variables:
+
+```env
+MONGODB_URI=your-mongodb-atlas-connection-string
+JWT_SECRET=replace-with-a-long-random-string
+CLIENT_URL=https://your-railway-domain.up.railway.app
+NODE_ENV=production
+```
+
+3. Set the Railway build and start commands:
+
+```bash
+npm run build
+npm run start
+```
+
+4. Deploy and verify:
+  - `GET /api/health` should return `{"status":"ok"}`
+  - Visiting the Railway domain should load the frontend
+
+5. If you use a custom domain, add that domain to `CLIENT_URL`.
 
 ## API summary
 

@@ -56,11 +56,23 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '..', 'dist')))
+  const distPath = path.join(__dirname, '..', 'dist')
 
-  // Fallback to index.html for SPA routing
-  app.use((_req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  app.use(express.static(distPath))
+
+  // Fallback to index.html for SPA routing, but let real assets and API routes pass through.
+  app.use((request, response, next) => {
+    const isGetRequest = request.method === 'GET'
+    const wantsHtml = request.accepts('html')
+    const isAssetRequest = path.extname(request.path) !== ''
+    const isApiRequest = request.path.startsWith('/api/')
+
+    if (!isGetRequest || !wantsHtml || isAssetRequest || isApiRequest) {
+      next()
+      return
+    }
+
+    response.sendFile(path.join(__dirname, '..', 'dist', 'index.html'))
   })
 }
 
