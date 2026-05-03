@@ -19,7 +19,7 @@ const connectDatabase = async (mongoUri) => {
   }
 
   mongoose.set('strictQuery', true)
-  await mongoose.connect(mongoUri)
+  await mongoose.connect(process.env.MONGODB_URI)
 
   try {
     await cleanupLegacyUserIndexes()
