@@ -332,7 +332,7 @@ const Dashboard = () => {
                   <h2>New team space</h2>
                 </div>
               </div>
-              <div style={{ padding: 16 }}>
+              <div className="restricted-panel">
                 <p className="subtle-copy">Only workspace admins can create projects. Contact an admin to request a new project.</p>
               </div>
             </section>

@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 
+import { TASK_PRIORITIES, TASK_STATUSES } from '../constants/domain.js'
+
 const taskSchema = new mongoose.Schema(
   {
     project: {
@@ -22,12 +24,12 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['TODO', 'IN_PROGRESS', 'REVIEW', 'DONE'],
+      enum: TASK_STATUSES,
       default: 'TODO',
     },
     priority: {
       type: String,
-      enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
+      enum: TASK_PRIORITIES,
       default: 'MEDIUM',
     },
     dueDate: {

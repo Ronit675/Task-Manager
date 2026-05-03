@@ -75,9 +75,9 @@ const SignupPage = () => {
               type="password"
               value={form.password}
             />
-            <div className="surface" style={{ padding: '12px' }}>
-              <p style={{ margin: 0, marginBottom: 8 }}>Role</p>
-              <label style={{ display: 'inline-flex', gap: 8, alignItems: 'center', marginRight: 12 }}>
+            <div className="role-selector">
+              <p>Role</p>
+              <label>
                 <input
                   type="radio"
                   name="role"
@@ -87,7 +87,7 @@ const SignupPage = () => {
                 />
                 Admin
               </label>
-              <label style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+              <label>
                 <input
                   type="radio"
                   name="role"

@@ -11,7 +11,7 @@ const startServer = async () => {
   await connectDatabase(process.env.MONGODB_URI)
 
   app.listen(port, () => {
-    console.log(`Server listening on port ${port}`)
+    console.info(`Server listening on port ${port}`)
   })
 }
 

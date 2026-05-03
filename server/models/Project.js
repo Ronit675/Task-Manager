@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 
+import { PROJECT_MEMBER_ROLES, PROJECT_STATUSES } from '../constants/domain.js'
+
 const memberSchema = new mongoose.Schema(
   {
     user: {
@@ -9,7 +11,7 @@ const memberSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['ADMIN', 'MEMBER'],
+      enum: PROJECT_MEMBER_ROLES,
       default: 'MEMBER',
     },
   },
@@ -35,7 +37,7 @@ const projectSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED'],
+      enum: PROJECT_STATUSES,
       default: 'ACTIVE',
     },
     dueDate: {

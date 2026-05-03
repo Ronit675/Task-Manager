@@ -189,6 +189,28 @@
   gap: 12px;
 }
 
+.role-selector {
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(19, 24, 31, 0.72);
+}
+
+.role-selector p {
+  margin: 0 0 8px;
+}
+
+.role-selector label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.restricted-panel {
+  padding: 16px;
+}
+
 .task-form-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-bottom: 20px;

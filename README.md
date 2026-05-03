@@ -34,7 +34,7 @@ Full-stack MERN task manager for teams. Users can sign up, create projects, add 
 
 ## Environment
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` in the project root and fill in the values:
 
 ```env
 PORT=5001
@@ -68,6 +68,11 @@ NODE_ENV=production
 - `npm run start` starts the Express API
 - `npm run lint` runs ESLint on frontend and backend files
 - `npm run build` builds the frontend
+- `npm run check` runs lint and a production build
+
+## Architecture
+
+See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the request flow, module boundaries, and access-control model.
 
 ## Run locally
 

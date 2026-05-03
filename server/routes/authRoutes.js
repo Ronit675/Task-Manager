@@ -1,115 +1,13 @@
-import bcrypt from 'bcryptjs'
 import express from 'express'
 
+import { getMe, login, signup } from '../controllers/authController.js'
 import authMiddleware from '../middleware/authMiddleware.js'
-import User from '../models/User.js'
 import asyncHandler from '../utils/asyncHandler.js'
-import createToken from '../utils/createToken.js'
-import sanitizeUser from '../utils/sanitizeUser.js'
 
 const router = express.Router()
 
-router.post(
-  '/signup',
-  asyncHandler(async (request, response) => {
-    const name = request.body.name?.trim()
-    const email = request.body.email?.trim().toLowerCase()
-    const password = request.body.password
-    const role = request.body.role?.trim().toLowerCase()
-
-    if (!name || name.length < 2) {
-      response.status(400)
-      throw new Error('Name must be at least 2 characters')
-    }
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      response.status(400)
-      throw new Error('Enter a valid email address')
-    }
-
-    if (!password || password.length < 6) {
-      response.status(400)
-      throw new Error('Password must be at least 6 characters')
-    }
-
-    if (role && !['admin', 'member'].includes(role)) {
-      response.status(400)
-      throw new Error('Role must be either "admin" or "member"')
-    }
-
-    const existingUser = await User.findOne({ email })
-
-    if (existingUser) {
-      response.status(409)
-      throw new Error('An account with this email already exists')
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10)
-
-    let user
-    try {
-      user = await User.create({
-        name,
-        email,
-        passwordHash,
-        role: role || 'member',
-      })
-    } catch (error) {
-      if (error?.code === 11000) {
-        response.status(409)
-        throw new Error('An account with this email already exists')
-      }
-
-      throw error
-    }
-
-    response.status(201).json({
-      token: createToken(user._id),
-      user: sanitizeUser(user),
-    })
-  }),
-)
-
-router.post(
-  '/login',
-  asyncHandler(async (request, response) => {
-    const email = request.body.email?.trim().toLowerCase()
-    const password = request.body.password
-
-    if (!email || !password) {
-      response.status(400)
-      throw new Error('Email and password are required')
-    }
-
-    const user = await User.findOne({ email })
-
-    if (!user) {
-      response.status(401)
-      throw new Error('Invalid email or password')
-    }
-
-    const passwordMatches = await bcrypt.compare(password, user.passwordHash)
-
-    if (!passwordMatches) {
-      response.status(401)
-      throw new Error('Invalid email or password')
-    }
-
-    response.json({
-      token: createToken(user._id),
-      user: sanitizeUser(user),
-    })
-  }),
-)
-
-router.get(
-  '/me',
-  authMiddleware,
-  asyncHandler(async (request, response) => {
-    response.json({
-      user: request.user,
-    })
-  }),
-)
+router.post('/signup', asyncHandler(signup))
+router.post('/login', asyncHandler(login))
+router.get('/me', authMiddleware, asyncHandler(getMe))
 
 export default router
