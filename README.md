@@ -38,7 +38,7 @@ Create a `.env` file in the project root:
 
 ```env
 PORT=5001
-MONGODB_URI=mongodb://127.0.0.1:27017/team-task-manager
+MONGODB_URI=
 JWT_SECRET=replace-with-a-long-random-string
 CLIENT_URL=http://localhost:5173
 ```
