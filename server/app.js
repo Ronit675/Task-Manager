@@ -39,8 +39,17 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'],
 }
 
+// Resolve __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 app.use(cors(corsOptions))
 app.use(express.json())
+
+// Serve static client build unconditionally so assets are never caught by API
+// routes or the error handler (single-service deployment with Vite dist/).
+const distPath = path.join(__dirname, '..', 'dist')
+app.use(express.static(distPath))
 
 app.get('/api/health', (_request, response) => {
   response.json({ status: 'ok' })
@@ -51,30 +60,21 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/projects', projectRoutes)
 app.use('/api/tasks', taskRoutes)
 
-// Serve static client build in production (single-service deployment)
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+// Fallback to index.html for SPA routing — only for HTML GET requests so that
+// missing asset requests still fall through to the 404 handler.
+app.use((request, response, next) => {
+  const isGetRequest = request.method === 'GET'
+  const wantsHtml = request.accepts('html')
+  const isAssetRequest = path.extname(request.path) !== ''
+  const isApiRequest = request.path.startsWith('/api/')
 
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '..', 'dist')
+  if (!isGetRequest || !wantsHtml || isAssetRequest || isApiRequest) {
+    next()
+    return
+  }
 
-  app.use(express.static(distPath))
-
-  // Fallback to index.html for SPA routing, but let real assets and API routes pass through.
-  app.use((request, response, next) => {
-    const isGetRequest = request.method === 'GET'
-    const wantsHtml = request.accepts('html')
-    const isAssetRequest = path.extname(request.path) !== ''
-    const isApiRequest = request.path.startsWith('/api/')
-
-    if (!isGetRequest || !wantsHtml || isAssetRequest || isApiRequest) {
-      next()
-      return
-    }
-
-    response.sendFile(path.join(__dirname, '..', 'dist', 'index.html'))
-  })
-}
+  response.sendFile(path.join(distPath, 'index.html'))
+})
 
 app.use(notFoundHandler)
 app.use(errorHandler)
