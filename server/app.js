@@ -2,6 +2,7 @@ import 'dotenv/config'
 
 import cors from 'cors'
 import express from 'express'
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -48,11 +49,67 @@ app.use(express.json())
 
 // Serve static client build unconditionally so assets are never caught by API
 // routes or the error handler (single-service deployment with Vite dist/).
-const distPath = path.join(__dirname, '..', 'dist')
-app.use(express.static(distPath))
+const distPath = path.resolve(__dirname, '..', 'dist')
+
+console.log(`[static] Registering express.static for distPath: ${distPath}`)
+console.log(`[static] dist/ exists: ${fs.existsSync(distPath)}`)
+
+if (fs.existsSync(distPath)) {
+  try {
+    const entries = fs.readdirSync(distPath)
+    console.log(`[static] dist/ contents: ${entries.join(', ')}`)
+  } catch (err) {
+    console.error('[static] Failed to read dist/ directory:', err)
+  }
+} else {
+  console.error('[static] WARNING: dist/ directory not found — static assets will not be served')
+}
+
+// Wrap express.static in a small shim that logs errors instead of swallowing them.
+app.use((request, response, next) => {
+  express.static(distPath)(request, response, (err) => {
+    if (err) {
+      console.error(`[static] express.static error for ${request.path}:`, err)
+      next(err)
+    } else {
+      next()
+    }
+  })
+})
 
 app.get('/api/health', (_request, response) => {
   response.json({ status: 'ok' })
+})
+
+// Debug route — returns distPath, whether it exists, and its top-level contents.
+// Remove once the static-serving issue is resolved.
+app.get('/debug/dist', (_request, response) => {
+  const exists = fs.existsSync(distPath)
+  let contents = null
+  let assetsContents = null
+  let error = null
+
+  if (exists) {
+    try {
+      contents = fs.readdirSync(distPath)
+      const assetsPath = path.join(distPath, 'assets')
+      if (fs.existsSync(assetsPath)) {
+        assetsContents = fs.readdirSync(assetsPath)
+      }
+    } catch (err) {
+      error = err.message
+    }
+  }
+
+  response.json({
+    distPath,
+    exists,
+    contents,
+    assetsContents,
+    error,
+    cwd: process.cwd(),
+    __dirname,
+  })
 })
 
 app.use('/api/auth', authRoutes)
@@ -73,10 +130,18 @@ app.use((request, response, next) => {
     return
   }
 
-  response.sendFile(path.join(distPath, 'index.html'))
+  const indexPath = path.join(distPath, 'index.html')
+  console.log(`[spa-fallback] Sending index.html from: ${indexPath} (exists: ${fs.existsSync(indexPath)})`)
+  response.sendFile(indexPath)
 })
 
 app.use(notFoundHandler)
-app.use(errorHandler)
+
+// Full-stack error handler — logs the complete error before delegating to the
+// JSON error handler so the stack trace is always visible in server logs.
+app.use((err, request, response, next) => {
+  console.error(`[errorHandler] ${request.method} ${request.originalUrl} →`, err)
+  errorHandler(err, request, response, next)
+})
 
 export default app
