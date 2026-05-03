@@ -97,6 +97,18 @@
   font-size: clamp(2rem, 3vw, 3rem);
 }
 
+.auth-panel h1 {
+  margin-bottom: 16px;
+}
+
+.auth-panel .subtle-copy {
+  margin-bottom: 20px;
+}
+
+.auth-panel .stack-form {
+  margin-bottom: 24px;
+}
+
 .hero-text,
 .subtle-copy,
 .project-overview p,
