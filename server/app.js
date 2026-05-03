@@ -13,9 +13,36 @@ import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.js'
 
 const app = express()
 
-const configuredOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map((origin) => origin.trim()).filter(Boolean)
-  : []
+const parseOrigins = (value = '') =>
+  value
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+const normalizeOrigin = (value) => {
+  if (!value) {
+    return null
+  }
+
+  const origin = value.startsWith('http') ? value : `https://${value}`
+
+  try {
+    return new URL(origin).origin
+  } catch {
+    return null
+  }
+}
+
+const configuredOrigins = parseOrigins(process.env.CLIENT_URL)
+  .map(normalizeOrigin)
+  .filter(Boolean)
+
+const railwayOrigins = [
+  process.env.RAILWAY_PUBLIC_DOMAIN,
+  process.env.RAILWAY_STATIC_URL,
+]
+  .map(normalizeOrigin)
+  .filter(Boolean)
 
 const defaultDevOrigins = [
   'http://localhost:5173',
@@ -24,7 +51,9 @@ const defaultDevOrigins = [
   'http://127.0.0.1:5174',
 ]
 
-const allowedOrigins = [...new Set([...configuredOrigins, ...defaultDevOrigins])]
+const allowedOrigins = [
+  ...new Set([...configuredOrigins, ...railwayOrigins, ...defaultDevOrigins]),
+]
 
 const corsOptions = {
   origin(origin, callback) {
