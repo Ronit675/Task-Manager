@@ -2,6 +2,8 @@ import 'dotenv/config'
 
 import cors from 'cors'
 import express from 'express'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 import authRoutes from './routes/authRoutes.js'
 import dashboardRoutes from './routes/dashboardRoutes.js'
@@ -48,6 +50,18 @@ app.use('/api/auth', authRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/projects', projectRoutes)
 app.use('/api/tasks', taskRoutes)
+
+// Serve static client build in production (single-service deployment)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '..', 'dist')))
+
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  })
+}
 
 app.use(notFoundHandler)
 app.use(errorHandler)
